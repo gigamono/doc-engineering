@@ -21,7 +21,7 @@
   ```rs
   fn connect(conn_str: &str) -> utilities::result::Result<SQliteConnection> {
       SQliteConnection::establish(conn_str).map_err(|err| SystemError::Conn {
-          ctx: format!("connecting to db, `{}`", conn_str),
+          ctx: format!(r#"connecting to db, "{}""#, conn_str),
           src: err,
       })
   }
@@ -45,7 +45,7 @@
   ```rs
   fn connect(conn_str: &str) -> Result<SQliteConnection> {
       SQliteConnection::establish(conn_str).map_err(|err| SystemError::Conn {
-          ctx: format!("connecting to db, `{}`", conn_str),
+          ctx: format!(r#"connecting to db, "{}""#, conn_str),
           src: err,
       })
   }
