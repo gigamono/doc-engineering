@@ -6,7 +6,7 @@
 
 ### Error Handling <a name="error-handling" />
 
-- All errors should be returned as [`SystemError`](https://github.dev/gigamono/utilities/blob/main/lib/messages/error.rs#L7-L13) except in external-facing request handlers.
+- All errors should be returned as `utilities::errors::Error` except in external-facing request handlers.
 
   #### Bad
 
@@ -20,23 +20,17 @@
 
   ```rs
   fn connect(conn_str: &str) -> utilities::result::Result<SQliteConnection> {
-      SQliteConnection::establish(conn_str).map_err(|err| SystemError::Conn {
-          ctx: format!("connecting to db, `{}`", conn_str),
-          src: err,
-      })
+      SQliteConnection::establish(conn_str)?
   }
   ```
 
-- `SystemError`s should provide high-level context information of what went wrong.
+- Re-propagated `Error`s should provide high-level context information of what you were doing leading to the error.
 
   #### Bad
 
   ```rs
   fn connect(conn_str: &str) -> Result<SQliteConnection> {
-      SQliteConnection::establish(conn_str).map_err(|err| SystemError::Conn {
-          ctx: "error ocurred",
-          src: err
-      })
+      SQliteConnection::establish(conn_str).context("an error ocurred")
   }
   ```
 
@@ -44,9 +38,27 @@
 
   ```rs
   fn connect(conn_str: &str) -> Result<SQliteConnection> {
-      SQliteConnection::establish(conn_str).map_err(|err| SystemError::Conn {
-          ctx: format!("connecting to db, `{}`", conn_str),
-          src: err,
-      })
+      SQliteConnection::establish(conn_str).context(r#"connecting to database "{}""#, conn_str)
+  }
+  ```
+
+  Note the gerund, `connecting`. It should describe an ongoing action.
+
+- On the other hand, new errors you introduce to the codebase should tell what went wrong
+
+
+  #### Bad
+
+  ```rs
+  fn connect(conn_str: &str) -> Result<SQliteConnection> {
+      Err(custom_error("connecting to database"))
+  }
+  ```
+
+  #### Good
+
+  ```rs
+  fn connect(conn_str: &str) -> Result<SQliteConnection> {
+      Err(custom_error(r#"could not connect to database "{}""#, conn_str))
   }
   ```
